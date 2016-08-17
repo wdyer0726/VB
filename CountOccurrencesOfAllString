@@ -1,0 +1,54 @@
+Sub findOrAddValue(valToFind As String, currMethod As String, ByRef rowCtr As Long, collSheet As Worksheet)
+  Dim rowFound As Boolean
+  Dim a As Long
+
+  rowFound = False
+
+  For a = 2 To rowCtr
+    If collSheet.Range("A" & a).Value = valToFind Then
+      rowFound = True
+      Exit For
+    End If
+  Next
+  If rowFound Then
+    collSheet.Range("B" & a).Value = collSheet.Range("B" & a).Value + 1
+    If InStr(1, collSheet.Range("C" & a).Value, currMethod, vbTextCompare) = 0 Then
+      collSheet.Range("C" & a).Value = collSheet.Range("C" & a).Value & " " & currMethod
+    End If
+  Else
+    rowCtr = rowCtr + 1
+    collSheet.Range("A" & rowCtr).Value = valToFind
+    collSheet.Range("B" & rowCtr).Value = 1
+    collSheet.Range("C" & rowCtr).Value = currMethod
+  End If
+End Sub
+Sub collateData()
+  Dim collatedWS As Worksheet, currWS As Worksheet
+  Dim collateRowCounter As Long
+  Dim i As Long, j As Integer
+  Dim currentMethod As String
+
+  Set collatedWS = ThisWorkbook.Sheets.Add
+  collatedWS.Range("A1") = "Item"
+  collatedWS.Range("B1") = "Count"
+  collatedWS.Range("C1") = "Methods"
+
+  collatedWS.Name = "Collated"
+  collateRowCounter = 1
+
+  For Each currWS In ThisWorkbook.Sheets
+    If currWS.Name <> "Collated" Then
+      For i = 2 To currWS.UsedRange.Rows.Count
+        If currWS.Range("A" & i).Value <> "" Then
+          currentMethod = currWS.Range("A" & i).Value
+        End If
+        For j = 3 To 5
+          If currWS.Cells(i, j).Value <> "" Then
+            Call findOrAddValue(currWS.Cells(i, j).Value, currentMethod, collateRowCounter, collatedWS)
+          End If
+        Next
+      Next
+    End If
+  Next
+End Sub
+
